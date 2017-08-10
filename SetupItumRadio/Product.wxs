@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension" xmlns:netfx="http://schemas.microsoft.com/wix/NetFxExtension">
+  <?define ItumRadio_TargetDir=$(var.ItumRadio.TargetDir)?>
+  <Product Id="*" Name="ItumRadio Player" Language="1033" Version="1.0.1.3" Manufacturer="Innu Takuaikan Uashat Mak Mani-Utenam" UpgradeCode="f5e099f2-97c6-4d7e-9f41-52051cdf449d">
+    <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+    <Upgrade Id="f5e099f2-97c6-4d7e-9f41-52051cdf449d">
+      <UpgradeVersion Minimum='1.0.0.0' Maximum='99.0.0.0' Property='PREVIOUSVERSIONSINSTALLED' IncludeMinimum='yes' IncludeMaximum='no' />
+    </Upgrade>
+
+    <PropertyRef Id="NETFRAMEWORK40FULLINSTALLROOTDIR"/>
+    <PropertyRef Id="NETFRAMEWORK40FULLINSTALLROOTDIR64"/>
+    <PropertyRef Id="NETFRAMEWORK40CLIENTINSTALLROOTDIR"/>
+    <PropertyRef Id="NETFRAMEWORK40CLIENTINSTALLROOTDIR64"/>
+
+    <Icon Id="itumradio" SourceFile="$(var.ItumRadio.ProjectDir)\ItumRadio.ico"/>
+    <Property Id="ARPPRODUCTICON" Value="itumradio" />
+    <Property Id="ARPCOMMENTS" Value="Lecteur pour les stations de radio du reseau I.T.U.M." />
+    <Property Id="ARPCONTACT" Value="http://www.itum.qc.ca" />
+    <Property Id="ARPURLINFOABOUT" Value="http://www.itum.qc.ca" />
+
+    <InstallExecuteSequence>
+      <RemoveExistingProducts Before="InstallInitialize" />
+    </InstallExecuteSequence>
+
+    <!--<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />-->
+    <MediaTemplate EmbedCab="yes" />
+
+    <Feature Id="ProductFeature" Title="ItumRadio" Level="1">
+      <ComponentGroupRef Id="ProductComponents" />
+      <ComponentRef Id="ApplicationShortcutDesktop"/>
+      <ComponentRef Id="ApplicationShortcut"/>
+    </Feature>
+  </Product>
+
+  <Fragment>
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramMenuFolder">
+        <Component Id="ApplicationShortcut" Guid="20EDA727-2FB4-4587-9827-9D69F13C44A2">
+          <Shortcut Id="ApplicationStartMenuShortcut" Name="ITUM Radio" Description="Radio Internet" Target="[MYAPPDIRPROPERTY]itumRadio.exe" WorkingDirectory="MYAPPDIRPROPERTY"/>
+          <RegistryValue Root="HKCU" Key="Software/itumRadio.exe" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+        </Component>
+      </Directory>
+      <Directory Id="DesktopFolder" Name="Desktop">
+        <Component Id="ApplicationShortcutDesktop" Guid="409D00B2-6582-45C7-8CE7-A67208E0CAAA">
+          <Shortcut Id="ApplicationDesktopShortcut" Name="ITUM Radio" Description="Radio Internet" Target="[MYAPPDIRPROPERTY]itumRadio.exe" WorkingDirectory="MYAPPDIRPROPERTY"/>
+          <!--<RemoveFolder Id="DesktopFolder" On="uninstall"/>-->
+          <RegistryValue Root="HKCU" Key="Software/itumRadio.exe" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+        </Component>
+      </Directory>
+      <Directory Id="ProgramFilesFolder">
+        <Directory Id="MYAPPDIRPROPERTY" Name="ItumRadio" />
+      </Directory>
+    </Directory>
+  </Fragment>
+
+
+  <Fragment>
+    <ComponentGroup Id="ProductComponents" Directory="MYAPPDIRPROPERTY">
+      <Component Id="itumRadio.exe" Guid="456e43af-25de-42f4-87a7-5d9e0bb9c37b">
+        <File Id="itumRadio.exe" Name="itumRadio.exe" Source="$(var.ItumRadio_TargetDir)itumRadio.exe" />
+      </Component>
+      <Component Id="itumRadio.exe.config" Guid="69f0e8d0-9e65-4387-9d6e-999bd2fed792">
+        <File Id="itumRadio.exe.config" Name="itumRadio.exe.config" Source="$(var.ItumRadio_TargetDir)itumRadio.exe.config" />
+      </Component>
+      <Component Id="Newtonsoft.Json.dll" Guid="9c8e5314-41de-4e23-b843-b2bbf16ae579">
+        <File Id="Newtonsoft.Json.dll" Name="Newtonsoft.Json.dll" Source="$(var.ItumRadio_TargetDir)Newtonsoft.Json.dll" />
+      </Component>
+      <!-- Event Source creation for 32bit OS with .NET 4 Full-->
+      <Component Id="CreateEventSource32BitFullNet4" Guid="88EF779B-5E7B-4DA6-9173-1BCA5CC6D54A">
+        <!--
+        <Condition><![CDATA[NETFRAMEWORK40FULLINSTALLROOTDIR AND NOT VersionNT64]]></Condition>
+        -->
+        <Condition><![CDATA[NETFRAMEWORK40FULLINSTALLROOTDIR]]></Condition>
+        <CreateFolder/>
+        <Util:EventSource xmlns:Util="http://schemas.microsoft.com/wix/UtilExtension" Name="itumRadio" Log="Application" EventMessageFile="[NETFRAMEWORK40FULLINSTALLROOTDIR]EventLogMessages.dll"/>
+      </Component>
+
+      <!-- Event Source creation for 32bit OS with .NET 4 Client Profile-->
+      <Component Id="CreateEventSource32BitClientNet4" Guid="C5245081-ABB5-48AF-A286-9842CD032CE1">
+        <!--
+        <Condition><![CDATA[NETFRAMEWORK40CLIENTINSTALLROOTDIR AND NOT VersionNT64]]></Condition>
+        -->
+        <Condition><![CDATA[NETFRAMEWORK40CLIENTINSTALLROOTDIR]]></Condition>
+        <CreateFolder/>
+        <Util:EventSource xmlns:Util="http://schemas.microsoft.com/wix/UtilExtension" Name="itumRadio" Log="Application" EventMessageFile="[NETFRAMEWORK40CLIENTINSTALLROOTDIR]EventLogMessages.dll"/>
+      </Component>
+
+      <!-- Event Source creation for 64bit OS with .NET 4 Full -->
+      <!--
+      <Component Id="CreateEventSource64BitFullNet4" Guid="2CC4C7C4-0001-4754-9B30-02C97A79EC1C">
+        <Condition><![CDATA[NETFRAMEWORK40FULLINSTALLROOTDIR64 AND VersionNT64]]></Condition>
+        <CreateFolder/>
+        <Util:EventSource xmlns:Util="http://schemas.microsoft.com/wix/UtilExtension" Name="itumRadio" Log="Application" EventMessageFile="[NETFRAMEWORK40FULLINSTALLROOTDIR64]EventLogMessages.dll"/>
+      </Component>
+      -->
+
+      <!-- Event Source creation for 64bit OS with .NET 4 Client Profile -->
+      <!--
+      <Component Id="CreateEventSource64BitClientNet4" Guid="4CBD13BF-9B70-4C47-A4FA-926A2F12B717">
+        <Condition><![CDATA[NETFRAMEWORK40CLIENTINSTALLROOTDIR64 AND VersionNT64]]></Condition>
+        <CreateFolder/>
+        <Util:EventSource xmlns:Util="http://schemas.microsoft.com/wix/UtilExtension" Name="itumRadio" Log="Application" EventMessageFile="[NETFRAMEWORK40CLIENTINSTALLROOTDIR64]EventLogMessages.dll"/>
+      </Component>
+      -->
+    </ComponentGroup>
+  </Fragment>
+</Wix>
