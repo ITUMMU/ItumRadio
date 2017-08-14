@@ -250,6 +250,9 @@ namespace itumRadio
             try
             {
                 stopRadio();
+                setPlayerStatus(true);
+                progressBar.Visible = false;
+                StatusLabel.Text = String.Empty;
             }
             catch (Exception ex)
             {
@@ -340,7 +343,7 @@ namespace itumRadio
             try
             {
                 playButton.Enabled = Status;
-                stopButtonbutton.Enabled = Status;
+                //stopButtonbutton.Enabled = Status;
                 forwardButton.Enabled = Status;
                 reverseButton.Enabled = Status;
                 stationList.Enabled = Status;
